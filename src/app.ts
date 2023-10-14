@@ -2,21 +2,13 @@ import { setTimeout } from 'node:timers/promises';
 import * as R from 'remeda';
 import Database from 'better-sqlite3';
 import { BithumbImporter, BithumbInterval } from './importers/bithumb';
+import { SqliteLoader } from './loaders/sqliteLoader';
+import { EMADIVStrategy } from './strategies/emadiv';
+import { PaperTrader } from './trader/paperTrader';
+import { BinanceImporter } from './importers/binance';
 
-async function saveBithumb(currency: string, interval: BithumbInterval) {
-  const importer = new BithumbImporter();
-  const rows0 = await importer.loadCandles({
-    currency,
-    interval: interval,
-  });
-
-  const rows = R.uniqBy(rows0, (row) => row.ts);
-
-  console.log(`${currency}:${interval} ${rows.length} rows loaded`);
-  console.log(`first row: ${JSON.stringify(new Date(rows[0].ts).toISOString())}`);
-  console.log(`last row: ${JSON.stringify(new Date(rows[rows.length - 1].ts).toISOString())}`);
-
-  const db = new Database(`db/bithumb_${currency}_${interval}.db`);
+async function save(importer: BinanceImporter, symbol: string, interval: BithumbInterval) {
+  const db = new Database(`db/binance_${symbol}_${interval}.db`);
   db.exec(`
     CREATE TABLE IF NOT EXISTS candles (
       ts INTEGER PRIMARY KEY,
@@ -28,29 +20,63 @@ async function saveBithumb(currency: string, interval: BithumbInterval) {
     )
   `);
 
-  const stmt = db.prepare(`
-    INSERT OR IGNORE INTO candles (ts, open, close, high, low, volume)
-    VALUES (:ts, :open, :close, :high, :low, :volume)
-  `);
-  for (const row of rows) {
-    stmt.run(row);
+  const rows0 = importer.loadCandles({
+    symbol,
+    interval: interval,
+    startTime: symbol === 'BTCUSDT' && interval === '1m' ? new Date('2017-08-17T04:00:00.000Z').getTime() : undefined,
+  });
+
+  for await (const rows of rows0) {
+    if (rows.length < 1000) {
+      break;
+    }
+    console.log(`${new Date().toISOString()} ${symbol}:${interval} ${rows.length} rows loaded`);
+    console.log(`first row: ${JSON.stringify(new Date(rows[0].ts).toISOString())}`);
+    console.log(`last row: ${JSON.stringify(new Date(rows[rows.length - 1].ts).toISOString())}`);
+
+    const stmt = db.prepare(`
+      INSERT OR IGNORE INTO candles (ts, open, close, high, low, volume)
+      VALUES (:ts, :open, :close, :high, :low, :volume)
+    `);
+    for (const row of rows) {
+      stmt.run(row);
+    }
   }
 }
 
-async function main() {
-  const currencies = ['BTC', 'XRP', 'SIX', 'ORBS', 'ANKR']
-  const intervals = ['1m', '5m', '10m', '30m', '1h', '12h'] as const;
+async function dump() {
+  const importer = new BinanceImporter();
+
+  const currencies = ['BTCUSDT', 'ETHUSDT', 'XRPUSDT']
+  const intervals = ['1m', '5m', '30m', '1h', '12h'] as const;
 
   for (const currency of currencies) {
     for (const interval of intervals) {
-      await saveBithumb(currency, interval);
+      console.log(`loading ${currency}:${interval}`);
+      await save(importer, currency, interval);
       await setTimeout(1000);
     }
   }
 }
 
-async function main2() {
+async function main() {
+  const loader = new SqliteLoader(new Database('db/binance_BTCUSDT_5m.db'));
 
+  const strategy = new EMADIVStrategy({
+    long: 2,
+    short: -2,
+  });
+  const trader = new PaperTrader(100, 1 - 0.25 / 100);
+
+  strategy.register(trader);
+
+  let lastCandle = null;
+  for await (const x of loader.load()) {
+    await strategy.update(x);
+    lastCandle = x;
+  }
+
+  console.log(strategy.trader?.state(lastCandle!));
 }
 
 main()

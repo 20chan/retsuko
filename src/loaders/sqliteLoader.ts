@@ -3,13 +3,13 @@ import { Loader } from '../core/loader';
 
 import { Database } from 'better-sqlite3';
 
-class SqliteLoader implements Loader {
+export class SqliteLoader implements Loader {
   constructor(
     private readonly db: Database,
   ) { }
 
   async *load(): AsyncIterableIterator<Candle> {
-    const rows = this.db.prepare('SELECT * FROM candles').get() as Candle[];
+    const rows = this.db.prepare('SELECT * FROM candles').all() as Candle[];
 
     for (const row of rows) {
       yield {

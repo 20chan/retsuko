@@ -5,12 +5,12 @@ export type BithumbInterval = (
   | '1m'
   | '3m'
   | '5m'
-  | '10m'
+  // | '10m'
   | '30m'
   | '1h'
   | '6h'
   | '12h'
-  | '24h'
+  // | '24h'
 )
 
 type BithumbCandlestick = [number, number, number, number, number, number];
@@ -21,10 +21,10 @@ interface BithumbCandlestickResponse {
 }
 
 export class BithumbImporter {
-  public async loadCandles(options: { currency: string, interval: BithumbInterval }) {
-    const { currency, interval } = options;
+  public async loadCandles(options: { symbol: string, interval: BithumbInterval }) {
+    const { symbol, interval } = options;
 
-    const resp = await fetch(`https://api.bithumb.com/public/candlestick/${currency}_KRW/${interval}`);
+    const resp = await fetch(`https://api.bithumb.com/public/candlestick/${symbol}_KRW/${interval}`);
     const json = await resp.json() as BithumbCandlestickResponse;
 
     if (json.status !== '0000') {
