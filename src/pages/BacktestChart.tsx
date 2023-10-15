@@ -117,11 +117,6 @@ export function BacktestChart(props: BacktestChartProps) {
     datasets,
   };
 
-  const dataForBalance = {
-    datasets: [
-    ],
-  };
-
   const options = {
     responsive: false,
     animation: false,
@@ -129,14 +124,6 @@ export function BacktestChart(props: BacktestChartProps) {
       title: {
         display: false,
         text: strategy,
-      },
-      verticalLine: {
-        startTs,
-        endTs,
-        candles,
-      },
-      legend: {
-        display: false,
       },
     },
     scales: {
@@ -167,67 +154,6 @@ export function BacktestChart(props: BacktestChartProps) {
       },
     },
   };
-
-  const optionsForBalance = {
-    responsive: false,
-    plugins: {
-      title: {
-        display: true,
-        text: 'balance',
-      },
-      verticalLine: {
-        startTs,
-        endTs,
-        candles,
-      },
-      legend: {
-        display: false,
-      },
-    },
-    scales: {
-      x: {
-        display: true,
-        type: 'timeseries',
-        unit: 'day',
-        time: {
-          displayFormats: {
-            day: 'YY-MM-DD hh:mm'
-          },
-        },
-      },
-    },
-  };
-
-  const verticalLinePlugin: Plugin = {
-    id: 'verticalLine',
-    afterDatasetsDraw(chart, args, _options, cancelable) {
-      const { ctx, scales } = chart;
-      const { top, bottom } = chart.chartArea;
-
-      let { startTs, endTs, candles } = (chart.options as typeof options).plugins.verticalLine;
-
-      const startTimeIndex = candles.findIndex(candle => candle.ts >= startTs);
-      let endTimeIndex = candles.findIndex(candle => candle.ts >= endTs);
-      if (endTimeIndex === -1) {
-        endTimeIndex = candles.length - 1;
-      }
-
-      const lineStart = scales.x.getPixelForValue(startTimeIndex);
-      const lineEnd = scales.x.getPixelForValue(endTimeIndex);
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(lineStart, top);
-      ctx.lineTo(lineStart, bottom);
-      ctx.moveTo(lineEnd, top);
-      ctx.lineTo(lineEnd, bottom);
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#ff0000';
-      ctx.stroke();
-      ctx.restore();
-    },
-  };
-
   return (
     <div>
       <Chart
@@ -237,14 +163,6 @@ export function BacktestChart(props: BacktestChartProps) {
         height={300}
         options={options as any}
         data={data}
-        plugins={[
-          verticalLinePlugin,
-          {
-            id: 'trades',
-            afterDatasetsDraw(chart, args, _options, cancelable) {
-            },
-          }
-        ]}
       />
     </div>
   )
