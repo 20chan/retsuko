@@ -5,4 +5,6 @@ export interface Trade {
   asset: number;
   balance: number;
   total: number;
+
+  price: number;
 }

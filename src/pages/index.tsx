@@ -15,6 +15,7 @@ export default function Index() {
   const [backtestResp, setBacktestResp] = useState<BacktestResponse | null>(null);
 
   const [curDb, setCurDb] = useState<string>('');
+  const [backtestDb, setBacktestDb] = useState<string>('');
   const [curStrategy, setCurStrategy] = useState<string>('');
   const [curStrategyConfig, setCurStrategyConfig] = useState<StrategyConfig>({});
   const [startTs, setStartTs] = useState<number>(0);
@@ -55,7 +56,7 @@ export default function Index() {
     }
 
     const input: BacktestRequest = {
-      dbName: curDb,
+      dbName: backtestDb,
       startTs,
       endTs,
       strategy: curStrategy,
@@ -74,8 +75,6 @@ export default function Index() {
     <div>
       <select onChange={e => {
         setCurDb(e.target.value);
-        setCandles(null);
-        setBacktestResp(null);
 
         const curDb = dbs?.find(db => db.name === e.target.value);
         setStartTs(Math.max(curDb?.startTs ?? 0, startTs));
@@ -110,8 +109,8 @@ export default function Index() {
           <button onClick={fetchCandles}>Fetch Candles</button>
 
           <div>
-            <input type="range" min={db.startTs} max={db.endTs} value={startTs} step={60000} onChange={e => setStartTs(parseInt(e.target.value))} />
-            <input type="range" min={db.startTs} max={db.endTs} value={endTs} step={60000} onChange={e => setEndTs(parseInt(e.target.value))} />
+            <input type="range" min={db.startTs} max={db.endTs} value={startTs} step={60000} onChange={e => setStartTs(parseInt(e.target.value))} style={{ width: '20rem' }} />
+            <input type="range" min={db.startTs} max={db.endTs} value={endTs} step={60000} onChange={e => setEndTs(parseInt(e.target.value))} style={{ width: '20rem' }} />
             {new Date(startTs).toISOString()} ~ {new Date(endTs).toISOString()}
           </div>
 
@@ -142,6 +141,16 @@ export default function Index() {
                 }
 
                 <br />
+
+                <select onChange={e => {
+                  setBacktestDb(e.target.value);
+                }}
+                >
+                  <option value="">Select a DB</option>
+                  {dbs?.map(db => (
+                    <option key={db.name} value={db.name}>{db.name}</option>
+                  ))}
+                </select>
                 <button onClick={() => fetchBacktest()}>Backtest</button>
               </div>
             )

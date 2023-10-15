@@ -32,6 +32,7 @@ export class PaperTrader implements StrategyEventHandler {
       asset: this.asset,
       balance: this.balance,
       total: this.balance + candle.close * this.asset,
+      price: candle.close,
     };
     this.trades.push(trade);
   }

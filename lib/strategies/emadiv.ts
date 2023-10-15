@@ -25,8 +25,8 @@ export class EMADIVStrategy extends Strategy<EMADIVConfig> {
 
   public defaultConfig(): EMADIVConfig {
     return {
-      long: -2,
-      short: 2,
+      long: -2.5,
+      short: 2.5,
       emaWeight: 50,
     };
   }

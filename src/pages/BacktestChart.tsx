@@ -1,6 +1,7 @@
 import { Candle } from '../../lib/core/candle';
 import { Trade } from '../../lib/core/trade';
 import { Chart, Line } from 'react-chartjs-2';
+import 'chartjs-adapter-moment';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,6 +12,7 @@ import {
   Tooltip,
   Legend,
   Plugin,
+  TimeSeriesScale,
 } from 'chart.js';
 
 ChartJS.register(
@@ -21,6 +23,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
+  TimeSeriesScale,
 );
 
 export interface BacktestChartProps {
@@ -52,17 +55,15 @@ export function BacktestChart(props: BacktestChartProps) {
   const startTimeIndex = candles.findIndex(candle => candle.ts >= startTs);
   const endTimeIndex = candles.findIndex(candle => candle.ts >= endTs);
 
-  const dataViewStart = Math.max(Math.round(startTimeIndex - candles.length * 0.1), 0);
-  const dataViewEnd = Math.min(Math.round(endTimeIndex + candles.length * 0.1), candles.length - 1);
-
-  const labels = candles.map(candle => candle.ts);
+  const dataViewStart = Math.max(startTimeIndex, 0);
+  const dataViewEnd = Math.min(endTimeIndex, candles.length - 1);
 
   const datasets = [
     {
       type: 'line' as const,
       label: 'Candles',
       data: candles.map(candle => ({
-        x: candle.ts,
+        x: new Date(candle.ts),
         y: candle.close,
       })),
       borderColor: 'rgb(255, 99, 132)',
@@ -70,55 +71,60 @@ export function BacktestChart(props: BacktestChartProps) {
       borderWidth: 1,
       pointStyle: false as any,
       order: 2,
+      spanGaps: true,
+      yAxisID: 'y',
     },
     {
       type: 'bubble' as const,
       label: 'Long/Buy',
       data: trades.filter(x => x.action === 'buy').map(trade => ({
-        x: trade.ts,
-        y: candles.find(candle => candle.ts === trade.ts)?.close ?? 0,
+        x: new Date(trade.ts),
+        y: trade.price,
         r: Math.min(10, Math.max(5, trade.total / 200)),
       })),
       backgroundColor: 'rgb(14, 203, 129, 0.5)',
       order: 1,
+      yAxisID: 'y',
     },
     {
       type: 'bubble' as const,
       label: 'Short/Sell',
       data: trades.filter(x => x.action === 'sell').map(trade => ({
-        x: trade.ts,
-        y: candles.find(candle => candle.ts === trade.ts)?.close ?? 0,
+        x: new Date(trade.ts),
+        y: trade.price,
         r: Math.min(10, Math.max(5, trade.total / 200)),
       })),
       backgroundColor: 'rgb(246, 70, 93, 0.5)',
       order: 1,
+      yAxisID: 'y',
+    },
+    {
+      type: 'line' as const,
+      label: 'Balance',
+      data: trades.map(trade => ({
+        x: new Date(trade.ts),
+        y: trade.total,
+      })),
+      borderColor: 'rgb(72, 128, 238)',
+      backgroundColor: 'rgb(72, 128, 238, 0.5)',
+      pointRadius: 1,
+      borderWidth: 2,
+      yAxisID: 'balanceY',
     },
   ];
 
   const data = {
-    labels,
     datasets,
   };
 
   const dataForBalance = {
-    labels,
     datasets: [
-      {
-        type: 'line' as const,
-        label: 'Balance',
-        data: trades.map(trade => ({
-          x: trade.ts,
-          y: trade.total,
-        })),
-        borderColor: 'rgb(72, 128, 238)',
-        backgroundColor: 'rgb(72, 128, 238, 0.5)',
-        pointRadius: 3,
-      },
     ],
   };
 
   const options = {
     responsive: false,
+    animation: false,
     plugins: {
       title: {
         display: false,
@@ -135,13 +141,29 @@ export function BacktestChart(props: BacktestChartProps) {
     },
     scales: {
       x: {
-        min: labels[dataViewStart],
-        max: labels[dataViewEnd],
-        ticks: {
-          callback: (value: number) => {
-            return formatTs(labels[value]);
+        min: candles[dataViewStart].ts,
+        max: candles[dataViewEnd].ts,
+        type: 'timeseries',
+        unit: 'day',
+        time: {
+          displayFormats: {
+            day: 'YY-MM-DD hh:mm'
           },
-        }
+        },
+        ticks: {
+          sampleSize: 10,
+        },
+      },
+      y: {
+        type: 'linear',
+        position: 'left',
+      },
+      balanceY: {
+        type: 'linear',
+        position: 'right',
+        grid: {
+          display: false,
+        },
       },
     },
   };
@@ -164,9 +186,14 @@ export function BacktestChart(props: BacktestChartProps) {
     },
     scales: {
       x: {
-        display: false,
-        min: labels[dataViewStart],
-        max: labels[dataViewEnd],
+        display: true,
+        type: 'timeseries',
+        unit: 'day',
+        time: {
+          displayFormats: {
+            day: 'YY-MM-DD hh:mm'
+          },
+        },
       },
     },
   };
@@ -218,15 +245,6 @@ export function BacktestChart(props: BacktestChartProps) {
             },
           }
         ]}
-      />
-      <Chart
-        type='line'
-        style={{ width: '1200px', height: '200px' }}
-        width={1200}
-        height={200}
-        options={optionsForBalance as any}
-        data={dataForBalance}
-        plugins={[verticalLinePlugin]}
       />
     </div>
   )

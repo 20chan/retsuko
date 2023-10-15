@@ -21,6 +21,8 @@
     "better-sqlite3": "^9.0.0",
     "binance": "^2.8.10",
     "chart.js": "^4.4.0",
+    "chartjs-adapter-moment": "^1.0.1",
+    "moment": "^2.29.4",
     "next": "^13.5.4",
     "node-fetch": "^2.7.0",
     "qs": "^6.11.2",
