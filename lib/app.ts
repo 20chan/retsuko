@@ -60,15 +60,12 @@ async function dump() {
 }
 
 async function main() {
-  const loader = new SqliteLoader(new Database('db/binance_BTCUSDT_5m.db'));
+  const loader = new SqliteLoader(new Database('db/binance_BTCUSDT_1h.db'));
 
-  const strategy = new EMADIVStrategy({
-    long: 2,
-    short: -2,
-  });
+  const strategy = new EMADIVStrategy();
   const trader = new PaperTrader(100, 1 - 0.25 / 100);
 
-  strategy.register(trader);
+  strategy.eventHandlers.push(trader);
 
   let lastCandle = null;
   for await (const x of loader.load()) {
@@ -76,7 +73,7 @@ async function main() {
     lastCandle = x;
   }
 
-  console.log(strategy.trader?.state(lastCandle!));
+  console.log(trader.state(lastCandle!));
 }
 
 main()

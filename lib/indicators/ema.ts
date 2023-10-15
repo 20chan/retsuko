@@ -3,7 +3,8 @@ import { Indicator } from '../core/indicator';
 
 export class EMA implements Indicator {
   constructor(
-    private readonly weight: number,
+    public readonly name: string,
+    public readonly weight: number,
   ) { }
 
   public value: number = 0;

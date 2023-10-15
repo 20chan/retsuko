@@ -1,11 +1,12 @@
 import { Candle } from '../core/candle';
+import { StrategyEventHandler } from '../core/strategy';
 import { Trade } from '../core/trade';
 
-export class PaperTrader {
+export class PaperTrader implements StrategyEventHandler {
   private balance: number;
   private asset: number;
 
-  private trades: Trade[];
+  public trades: Trade[];
 
   constructor(
     private readonly initialBalance: number,
@@ -16,7 +17,7 @@ export class PaperTrader {
     this.trades = [];
   }
 
-  public handleAdvice(candle: Candle, direction: 'long' | 'short') {
+  public async handleAdvice(candle: Candle, direction: 'long' | 'short') {
     if (direction === 'long') {
       this.asset += this.extractFee(this.balance / candle.close);
       this.balance = 0;
@@ -33,7 +34,6 @@ export class PaperTrader {
       total: this.balance + candle.close * this.asset,
     };
     this.trades.push(trade);
-    return trade;
   }
 
   public state(candle: Candle) {

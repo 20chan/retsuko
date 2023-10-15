@@ -1,25 +1,34 @@
 import { Candle } from '../core/candle';
 import { Indicator } from '../core/indicator';
-import { Strategy } from '../core/strategy';
+import { Strategy, StrategyConfig } from '../core/strategy';
 
-export interface EMADIVConfig {
+export interface EMADIVConfig extends StrategyConfig {
   long: number;
   short: number;
+  emaWeight: number;
 }
 
 export interface EMADIVState {
   trend: 'long' | 'short';
 }
 
-export class EMADIVStrategy extends Strategy {
+export class EMADIVStrategy extends Strategy<EMADIVConfig> {
   private state: EMADIVState | null = null;
   private ema: Indicator;
 
   constructor(
-    private readonly config: EMADIVConfig,
+    config?: EMADIVConfig,
   ) {
-    super();
-    this.ema = this.indicator.ema(50);
+    super(config);
+    this.ema = this.indicator.ema('ema', this.config.emaWeight);
+  }
+
+  public defaultConfig(): EMADIVConfig {
+    return {
+      long: -2,
+      short: 2,
+      emaWeight: 50,
+    };
   }
 
   public override async update(candle: Candle): Promise<void> {

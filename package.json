@@ -4,20 +4,29 @@
   "description": "",
   "main": "src/app.ts",
   "scripts": {
-    "start": "ts-node src/app.ts"
+    "start": "ts-node src/app.ts",
+    "dev": "next dev"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.5",
     "@types/node-fetch": "^2.6.6",
+    "@types/qs": "^6.9.8",
+    "@types/react": "18.2.28",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
   "dependencies": {
     "better-sqlite3": "^9.0.0",
     "binance": "^2.8.10",
+    "chart.js": "^4.4.0",
+    "next": "^13.5.4",
     "node-fetch": "^2.7.0",
+    "qs": "^6.11.2",
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18.2.0",
     "remeda": "^1.27.1"
   }
 }
