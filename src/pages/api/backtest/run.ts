@@ -56,7 +56,7 @@ export default async function handler(
   const db = new Database(`db/${dbName}`);
   const loader = new SqliteLoader(db);
   const strategy = strategyEntry.loader(config);
-  const trader = new PaperTrader(1000, 1 - 0.25 / 100);
+  const trader = new PaperTrader(1000, 1 - 0 / 100);
   strategy.eventHandlers.push(trader);
 
   let lastCandle = null;
