@@ -9,9 +9,9 @@ inspired from [gekko](https://github.com/askmike/gekko), which is not maintained
 
 ## todo
 
-- [ ] fetching data
-- [ ] add strategy/indicator
-- [ ] backtesting
+- [x] fetching data
+- [x] add strategy/indicator
+- [x] backtesting
   - [ ] automatic backtesting with reports
 - [ ] live paper trading
 - [ ] live trading
