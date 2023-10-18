@@ -83,9 +83,9 @@ export function BacktestChart(props: BacktestChartProps) {
       data: trades.filter(x => x.action === 'buy').map(trade => ({
         x: new Date(trade.ts),
         y: trade.price,
-        r: Math.min(10, Math.max(5, trade.total / 200)),
+        r: Math.min(4, Math.max(1, trade.total / 200)),
       })),
-      backgroundColor: 'rgb(14, 203, 129, 0.5)',
+      backgroundColor: 'rgb(14, 203, 129, 0.2)',
       order: 1,
       yAxisID: 'y',
     },
@@ -95,7 +95,7 @@ export function BacktestChart(props: BacktestChartProps) {
       data: trades.filter(x => x.action === 'sell').map(trade => ({
         x: new Date(trade.ts),
         y: trade.price,
-        r: Math.min(10, Math.max(5, trade.total / 200)),
+        r: Math.min(4, Math.max(1, trade.total / 200)),
       })),
       backgroundColor: 'rgb(246, 70, 93, 0.5)',
       order: 1,
