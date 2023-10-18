@@ -3,6 +3,7 @@ import { EMA } from '../indicators/ema';
 import { RSI } from '../indicators/rsi';
 import { SMA } from '../indicators/sma';
 import { SMMA } from '../indicators/smma';
+import { StochRSI } from '../indicators/stochRsi';
 import { Candle } from './candle';
 
 export interface Indicator {
@@ -46,6 +47,12 @@ export class IndicatorManager {
 
   public rsi(name: string, windowLength: number): Indicator {
     const indicator = new RSI(name, windowLength);
+    this.indicators.push(indicator);
+    return indicator;
+  }
+
+  public stochRsi(name: string, windowLength: number): Indicator {
+    const indicator = new StochRSI(name, windowLength);
     this.indicators.push(indicator);
     return indicator;
   }

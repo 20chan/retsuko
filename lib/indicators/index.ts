@@ -3,6 +3,7 @@ import { EMA } from './ema';
 import { RSI } from './rsi';
 import { SMA } from './sma';
 import { SMMA } from './smma';
+import { StochRSI } from './stochRsi';
 
 export const Indicators = [
   {
@@ -31,8 +32,14 @@ export const Indicators = [
   },
   {
     name: 'RSI',
-    defaultWeight: 50,
+    defaultWeight: 14,
     yAxis: 'oscillator',
     loader: (name: string, weight: number) => new RSI(name, weight),
+  },
+  {
+    name: 'StochRSI',
+    defaultWeight: 14,
+    yAxis: 'oscillator',
+    loader: (name: string, weight: number) => new StochRSI(name, weight),
   },
 ];

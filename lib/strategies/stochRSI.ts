@@ -2,7 +2,7 @@ import { Candle } from '../core/candle';
 import { Indicator } from '../core/indicator';
 import { Strategy, StrategyConfig } from '../core/strategy';
 
-export interface RSIStrategyConfig extends StrategyConfig {
+export interface StochRSIStrategyConfig extends StrategyConfig {
   weight: number;
   low: number;
   high: number;
@@ -10,22 +10,22 @@ export interface RSIStrategyConfig extends StrategyConfig {
   reversed: number;
 }
 
-export interface RSIState {
+export interface StochRSIState {
   direction: 'up' | 'down' | 'none';
   duration: number;
   persisted: boolean;
   adviced: boolean;
 }
 
-export class RSIStrategy extends Strategy<RSIStrategyConfig> {
-  private state: RSIState;
-  private rsi: Indicator;
+export class StochRSIStrategy extends Strategy<StochRSIStrategyConfig> {
+  private state: StochRSIState;
+  private stochRsi: Indicator;
 
   constructor(
-    config?: RSIStrategyConfig,
+    config?: StochRSIStrategyConfig,
   ) {
     super(config);
-    this.rsi = this.indicator.rsi('rsi', config?.weight ?? 14);
+    this.stochRsi = this.indicator.stochRsi('stochRsi', config?.weight ?? 14);
     this.state = {
       direction: 'none',
       duration: 0,
@@ -34,12 +34,12 @@ export class RSIStrategy extends Strategy<RSIStrategyConfig> {
     };
   }
 
-  public defaultConfig(): RSIStrategyConfig {
+  public defaultConfig(): StochRSIStrategyConfig {
     return {
-      weight: 14,
-      low: 30,
-      high: 70,
-      persistence: 1,
+      weight: 3,
+      low: 20,
+      high: 80,
+      persistence: 3,
       reversed: 0,
     };
   }
@@ -55,9 +55,9 @@ export class RSIStrategy extends Strategy<RSIStrategyConfig> {
   public override async update(candle: Candle): Promise<void> {
     super.update(candle);
 
-    const rsi = this.rsi.value;
+    const stochRsi = this.stochRsi.value;
 
-    if (rsi > this.config.high) {
+    if (stochRsi > this.config.high) {
       if (this.state.direction !== 'up') {
         this.state = {
           direction: 'up',
@@ -77,7 +77,7 @@ export class RSIStrategy extends Strategy<RSIStrategyConfig> {
         this.state.adviced = true;
         this.adviceWrapper(candle, 'short');
       }
-    } else if (rsi < this.config.low) {
+    } else if (stochRsi < this.config.low) {
       if (this.state.direction !== 'down') {
         this.state = {
           direction: 'down',
@@ -97,6 +97,8 @@ export class RSIStrategy extends Strategy<RSIStrategyConfig> {
         this.state.adviced = true;
         this.adviceWrapper(candle, 'long');
       }
+    } else {
+      this.state.duration = 0;
     }
   }
 }
