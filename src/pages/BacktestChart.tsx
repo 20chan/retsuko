@@ -14,6 +14,7 @@ import {
   Plugin,
   TimeSeriesScale,
 } from 'chart.js';
+import { IndicatorState } from './IndicatorLoader';
 
 ChartJS.register(
   CategoryScale,
@@ -32,6 +33,8 @@ export interface BacktestChartProps {
   trades: Trade[];
   startTime: number;
   endTime: number;
+
+  indicators: IndicatorState[];
 }
 
 function formatTs(ts: number) {
@@ -47,7 +50,7 @@ function formatTs(ts: number) {
 }
 
 export function BacktestChart(props: BacktestChartProps) {
-  const { strategy, candles, trades, startTime: startTime0, endTime: endTime0 } = props;
+  const { strategy, candles, trades, startTime: startTime0, endTime: endTime0, indicators } = props;
 
   const startTs = startTime0 === 0 ? candles[0].ts : startTime0;
   const endTs = endTime0 === 0 ? candles[candles.length - 1].ts : endTime0;
@@ -56,7 +59,7 @@ export function BacktestChart(props: BacktestChartProps) {
   const endTimeIndex = candles.findIndex(candle => candle.ts >= endTs);
 
   const dataViewStart = Math.max(startTimeIndex, 0);
-  const dataViewEnd = Math.min(endTimeIndex, candles.length - 1);
+  const dataViewEnd = Math.min(endTimeIndex === -1 ? Infinity : endTimeIndex, candles.length - 1);
 
   const datasets = [
     {
@@ -111,6 +114,19 @@ export function BacktestChart(props: BacktestChartProps) {
       borderWidth: 2,
       yAxisID: 'balanceY',
     },
+    ...indicators.map(indicator => ({
+      type: 'line' as const,
+      label: indicator.name,
+      data: indicator.values.map(value => ({
+        x: new Date(value.ts),
+        y: value.value,
+      })),
+      borderColor: 'rgb(0, 0, 0)',
+      backgroundColor: 'rgb(0, 0, 0, 0.5)',
+      pointRadius: 0,
+      borderWidth: 1,
+      yAxisID: indicator.yAxisID === 'price' ? 'y' : indicator.yAxisID,
+    })),
   ];
 
   const data = {
@@ -158,9 +174,9 @@ export function BacktestChart(props: BacktestChartProps) {
     <div>
       <Chart
         type='line'
-        style={{ width: '1200px', height: '300px' }}
-        width={1200}
-        height={300}
+        style={{ width: '1800px', height: '600px' }}
+        width={1800}
+        height={600}
         options={options as any}
         data={data}
       />

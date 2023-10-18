@@ -7,6 +7,8 @@ import { Candle } from '../../lib/core/candle';
 import { CandleResponse } from './api/candle';
 import { StrategyResponse } from './api/strategy';
 import { StrategyConfig } from '../../lib/core/strategy';
+import { EMA } from '../../lib/indicators/ema';
+import { IndicatorLoader, IndicatorState } from './IndicatorLoader';
 
 export default function Index() {
   const [dbs, setDbs] = useState<DBResponse | null>(null);
@@ -20,6 +22,8 @@ export default function Index() {
   const [curStrategyConfig, setCurStrategyConfig] = useState<StrategyConfig>({});
   const [startTs, setStartTs] = useState<number>(0);
   const [endTs, setEndTs] = useState<number>(0);
+
+  const [indicators, setIndicators] = useState<IndicatorState[]>([]);
 
   const db = dbs?.find(db => db.name === curDb);
   const strategy = strategies?.find(strategy => strategy.name === curStrategy);
@@ -116,42 +120,52 @@ export default function Index() {
 
           {
             strategy && (
-              <div>
-                <h3>
-                  strategy: {strategy.name}
-                </h3>
-                {strategy.description}
+              <div style={{ display: 'flex' }}>
+                <div>
+                  <h3>
+                    strategy: {strategy.name}
+                  </h3>
+                  {strategy.description}
 
-                {
-                  Object.keys(curStrategyConfig).map(key => (
-                    <div key={key}>
-                      <label htmlFor={key}>{key}</label>
-                      <input
-                        id={key}
-                        type="number"
-                        value={curStrategyConfig[key]}
-                        onChange={e => {
-                          const newConfig = { ...curStrategyConfig };
-                          newConfig[key] = e.target.valueAsNumber;
-                          setCurStrategyConfig(newConfig);
-                        }}
-                      />
-                    </div>
-                  ))
-                }
+                  {
+                    Object.keys(curStrategyConfig).map(key => (
+                      <div key={key}>
+                        <label htmlFor={key}>{key}</label>
+                        <input
+                          id={key}
+                          type="number"
+                          value={curStrategyConfig[key]}
+                          onChange={e => {
+                            const newConfig = { ...curStrategyConfig };
+                            newConfig[key] = e.target.valueAsNumber;
+                            setCurStrategyConfig(newConfig);
+                          }}
+                        />
+                      </div>
+                    ))
+                  }
 
-                <br />
+                  <br />
 
-                <select onChange={e => {
-                  setBacktestDb(e.target.value);
-                }}
-                >
-                  <option value="">Select a DB</option>
-                  {dbs?.map(db => (
-                    <option key={db.name} value={db.name}>{db.name}</option>
-                  ))}
-                </select>
-                <button onClick={() => fetchBacktest()}>Backtest</button>
+                  <select onChange={e => {
+                    setBacktestDb(e.target.value);
+                  }}
+                  >
+                    <option value="">Select a DB</option>
+                    {dbs?.map(db => (
+                      <option key={db.name} value={db.name}>{db.name}</option>
+                    ))}
+                  </select>
+                  <button onClick={() => fetchBacktest()}>Backtest</button>
+                </div>
+
+                <div>
+                  <IndicatorLoader
+                    candles={candles ?? []}
+                    indicators={indicators}
+                    setIndicators={setIndicators}
+                  />
+                </div>
               </div>
             )
           }
@@ -163,6 +177,7 @@ export default function Index() {
                 trades={backtestResp?.trades ?? []}
                 startTime={startTs}
                 endTime={endTs}
+                indicators={indicators}
               />
             )
           }
