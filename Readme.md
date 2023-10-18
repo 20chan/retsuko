@@ -5,7 +5,18 @@
 stock/crypto strategy backtesting framework
 inspired from [gekko](https://github.com/askmike/gekko), which is not maintained, rewrited many things
 
-## example
+![like this](imgs/example.png)
+
+## todo
+
+- [ ] fetching data
+- [ ] add strategy/indicator
+- [ ] backtesting
+  - [ ] automatic backtesting with reports
+- [ ] live paper trading
+- [ ] live trading
+
+## Backtesting Strategy Example
 
 strategy backtesting, StochRSI without fee
 
